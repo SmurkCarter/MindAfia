@@ -62,7 +62,9 @@ Patient progress visualization
 Session history
 
 ML-generated insights and trends
+
 🏗️ Tech Stack
+
 Backend
 
 Django / Django REST Framework
@@ -102,6 +104,7 @@ Docker & Docker Compose
 NGINX
 
 CI/CD ready
+
 🎯 Project Goal
 
 MindAfia aims to provide accessible, affordable, and intelligent mental health support by combining telemedicine, AI-assisted insights, and secure digital communication — especially for regions with limited access to mental health professionals.
