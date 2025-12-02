@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions
 from .models import ClinicianProfile
-from .serializers import ClinicianProfileSerializerProfileSerializer
+from .serializers import ClinicianProfileSerializer 
 
 class ClinicianProfileViewSet(viewsets.ModelViewSet):
     queryset = ClinicianProfile.objects.select_related("user").all()

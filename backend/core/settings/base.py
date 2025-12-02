@@ -40,22 +40,36 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        # add any template dirs you need, or leave empty
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.template.context_processors.i18n",
+                "django.template.context_processors.media",
+                "django.template.context_processors.static",
+                "django.template.context_processors.tz",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
+    },
+]
+
 ROOT_URLCONF = "core.urls"
 ASGI_APPLICATION = "core.asgi.application"
 WSGI_APPLICATION = "core.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DATABASE_NAME", "mindafia"),
-        "USER": os.getenv("DATABASE_USER", "mindafia"),
-        "PASSWORD": os.getenv("DATABASE_PASSWORD", "mindafia_pwd"),
-        "HOST": os.getenv("DATABASE_HOST", "db"),
-        "PORT": os.getenv("DATABASE_PORT", "5432"),
-    }
-}
+
 
 AUTH_PASSWORD_VALIDATORS = []
+AUTH_USER_MODEL = "authentication.User"
+
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Africa/Nairobi"
@@ -77,5 +91,6 @@ REST_FRAMEWORK = {
     )
 }
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Celery
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", f"redis://{os.getenv('REDIS_HOST','redis')}:{os.getenv('REDIS_PORT','6379')}/0")
