@@ -1,0 +1,16 @@
+# apps/authentication/admin.py
+from django.contrib import admin
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+# If User was already registered by Django's auth app, unregister it first.
+# This prevents "AlreadyRegistered: The model User is already registered" errors.
+try:
+    admin.site.unregister(User)
+except admin.sites.NotRegistered:
+    pass
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ("username", "email", "is_clinician", "is_patient", "is_staff")

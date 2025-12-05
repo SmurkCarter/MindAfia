@@ -38,3 +38,9 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # Allow CORS in development
 CORS_ALLOW_ALL_ORIGINS = True
+
+# use the WSGI application for the dev runserver
+WSGI_APPLICATION = 'core.wsgi.application'
+
+# keep ASGI set for channels/websockets if you need it (optional)
+ASGI_APPLICATION = 'core.asgi.application'
