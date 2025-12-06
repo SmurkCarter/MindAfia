@@ -1,8 +1,29 @@
-.venv/ 
-__pycache__/ 
-*.pyc 
-db.sqlite3 
-/backend/media/ 
-/backend/static/ 
-.env 
-.DS_Store 
+# Python / venv
+.venv/
+venv/
+env/
+.venv/
+*.pyc
+__pycache__/
+
+# Django
+db.sqlite3
+/staticfiles/
+media/
+*.log
+
+# IDEs / OS
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# pip
+pip-wheel-metadata/
+*.egg-info/
+
+# Pytest / coverage
+htmlcov/
+.coverage
