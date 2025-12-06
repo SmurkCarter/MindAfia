@@ -1,9 +1,14 @@
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
+from django.http import HttpResponse
 from django.conf.urls.static import static
 
+def index(request):
+    return HttpResponse("<h1>Telepsychiatry API</h1><p>Backend is running.</p>")
+
 urlpatterns = [
+    path("", index, name="index"), 
     path('admin/', admin.site.urls),
     path('api/auth/', include('apps.authentication.urls')),
     path('api/patients/', include('apps.patients.urls')),
