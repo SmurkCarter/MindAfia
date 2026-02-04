@@ -22,12 +22,15 @@ INSTALLED_APPS = [
 
     # project apps
     "apps.authentication",
-    "apps.patients",
     "apps.clinicians",
     "apps.scheduling",
-    "apps.notes",
+    "apps.clinical_notes",
     "apps.chat",
     "apps.ml",
+    "apps.profiles",
+    "apps.appointments",
+
+
 ]
 
 MIDDLEWARE = [
@@ -94,3 +97,8 @@ REST_FRAMEWORK = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Celery
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", f"redis://{os.getenv('REDIS_HOST','redis')}:{os.getenv('REDIS_PORT','6379')}/0")
+
+INSTALLED_APPS += ["drf_spectacular"]
+
+REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
+
