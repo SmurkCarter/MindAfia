@@ -29,6 +29,14 @@ INSTALLED_APPS = [
     "apps.ml",
     "apps.profiles",
     "apps.appointments",
+    "apps.assessments",
+    "apps.articles",
+    "apps.disorders",
+    "apps.treatments",
+
+
+
+
 
 
 ]

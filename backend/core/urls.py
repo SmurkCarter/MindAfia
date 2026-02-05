@@ -22,6 +22,15 @@ urlpatterns = [
     path("api/clinical-notes/", include("apps.clinical_notes.urls")),
     path("api/schema/", SpectacularAPIView.as_view()),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema")),
+    path("api/assessments/", include("apps.assessments.urls")),
+    path("api/articles/", include("apps.articles.urls")),
+    path("api/articles/", include("apps.articles.urls")),
+    path("api/disorders/", include("apps.disorders.urls")),
+    path("api/treatments/", include("apps.treatments.urls")),
+
+
+
+
 
 ]
 

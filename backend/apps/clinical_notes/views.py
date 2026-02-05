@@ -1,32 +1,36 @@
-from rest_framework import viewsets, permissions
+from rest_framework.generics import (
+    CreateAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+)
+from rest_framework.permissions import IsAuthenticated
+
 from .models import ClinicalNote
-from .serializers import ClinicalNoteSerializer
-from .permissions import IsDoctor, IsOwnerPatient
+from .serializers import (
+    ClinicalNoteCreateSerializer,
+    ClinicalNoteReadSerializer,
+)
+from .permissions import IsClinician
 
 
-class ClinicalNoteViewSet(viewsets.ModelViewSet):
-    serializer_class = ClinicalNoteSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class CreateClinicalNoteView(CreateAPIView):
+    serializer_class = ClinicalNoteCreateSerializer
+    permission_classes = [IsAuthenticated, IsClinician]
+
+
+class ClinicianNotesListView(ListAPIView):
+    serializer_class = ClinicalNoteReadSerializer
+    permission_classes = [IsAuthenticated, IsClinician]
 
     def get_queryset(self):
-        user = self.request.user
-
-        if hasattr(user, "doctor_profile"):
-            return ClinicalNote.objects.filter(doctor=user.doctor_profile)
-
-        if hasattr(user, "patient_profile"):
-            return ClinicalNote.objects.filter(patient=user.patient_profile)
-
-        return ClinicalNote.objects.none()
-
-    def get_permissions(self):
-        if self.action in ["create", "update", "partial_update"]:
-            return [permissions.IsAuthenticated(), IsDoctor()]
-        return [permissions.IsAuthenticated()]
-
-    def perform_create(self, serializer):
-        appointment = serializer.validated_data["appointment"]
-        serializer.save(
-            doctor=self.request.user.doctor_profile,
-            patient=appointment.patient
+        return ClinicalNote.objects.filter(
+            clinician=self.request.user.clinician_profile
         )
+
+
+class PatientNotesListView(ListAPIView):
+    serializer_class = ClinicalNoteReadSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return ClinicalNote.objects.filter(patient=self.request.user)

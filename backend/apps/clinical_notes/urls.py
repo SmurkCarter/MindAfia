@@ -1,7 +1,12 @@
-from rest_framework.routers import DefaultRouter
-from .views import ClinicalNoteViewSet
+from django.urls import path
+from .views import (
+    CreateClinicalNoteView,
+    ClinicianNotesListView,
+    PatientNotesListView,
+)
 
-router = DefaultRouter()
-router.register("notes", ClinicalNoteViewSet, basename="clinical-notes")
-
-urlpatterns = router.urls
+urlpatterns = [
+    path("create/", CreateClinicalNoteView.as_view()),
+    path("clinician/", ClinicianNotesListView.as_view()),
+    path("patient/", PatientNotesListView.as_view()),
+]
