@@ -1,13 +1,21 @@
 import os
 from pathlib import Path
 
+# ------------------------------------------------------------------------------
+# BASE
+# ------------------------------------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret")
+SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key")
 DEBUG = os.getenv("DEBUG", "0") == "1"
-ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "localhost").split(",")
 
+ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+
+# ------------------------------------------------------------------------------
+# APPLICATIONS
+# ------------------------------------------------------------------------------
 INSTALLED_APPS = [
+    # Django core
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -15,32 +23,29 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # third party
+    # Third-party
     "rest_framework",
     "corsheaders",
     "channels",
+    "drf_spectacular",
 
-    # project apps
+    # Project apps
     "apps.authentication",
     "apps.clinicians",
-    "apps.scheduling",
-    "apps.clinical_notes",
-    "apps.chat",
-    "apps.ml",
     "apps.profiles",
     "apps.appointments",
+    "apps.clinical_notes",
     "apps.assessments",
     "apps.articles",
     "apps.disorders",
     "apps.treatments",
-
-
-
-
-
-
+    "apps.chat",
+    "apps.ml",
 ]
 
+# ------------------------------------------------------------------------------
+# MIDDLEWARE
+# ------------------------------------------------------------------------------
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -51,10 +56,20 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
 ]
 
+# ------------------------------------------------------------------------------
+# URL / ASGI / WSGI
+# ------------------------------------------------------------------------------
+ROOT_URLCONF = "core.urls"
+
+ASGI_APPLICATION = "core.asgi.application"
+WSGI_APPLICATION = "core.wsgi.application"
+
+# ------------------------------------------------------------------------------
+# TEMPLATES
+# ------------------------------------------------------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        # add any template dirs you need, or leave empty
         "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -62,51 +77,75 @@ TEMPLATES = [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
-                "django.template.context_processors.i18n",
-                "django.template.context_processors.media",
-                "django.template.context_processors.static",
-                "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-ROOT_URLCONF = "core.urls"
-ASGI_APPLICATION = "core.asgi.application"
-WSGI_APPLICATION = "core.wsgi.application"
-
-
-
-AUTH_PASSWORD_VALIDATORS = []
+# ------------------------------------------------------------------------------
+# AUTH
+# ------------------------------------------------------------------------------
 AUTH_USER_MODEL = "authentication.User"
+AUTH_PASSWORD_VALIDATORS = []
 
-
+# ------------------------------------------------------------------------------
+# INTERNATIONALIZATION
+# ------------------------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Africa/Nairobi"
 USE_I18N = True
 USE_TZ = True
 
+# ------------------------------------------------------------------------------
+# STATIC / MEDIA
+# ------------------------------------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "static"
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# Django REST Framework simple defaults
+# ------------------------------------------------------------------------------
+# DATABASE (default handled in development.py / production.py)
+# ------------------------------------------------------------------------------
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ------------------------------------------------------------------------------
+# DJANGO REST FRAMEWORK
+# ------------------------------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
-    )
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-# Celery
-CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", f"redis://{os.getenv('REDIS_HOST','redis')}:{os.getenv('REDIS_PORT','6379')}/0")
+# ------------------------------------------------------------------------------
+# DRF SPECTACULAR (Swagger / OpenAPI)
+# ------------------------------------------------------------------------------
+SPECTACULAR_SETTINGS = {
+    "TITLE": "MindAfia Telepsychiatry API",
+    "DESCRIPTION": "Backend API for MindAfia Telepsychiatry Platform",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 
-INSTALLED_APPS += ["drf_spectacular"]
+# ------------------------------------------------------------------------------
+# CORS
+# ------------------------------------------------------------------------------
+CORS_ALLOW_ALL_ORIGINS = True
 
-REST_FRAMEWORK["DEFAULT_SCHEMA_CLASS"] = "drf_spectacular.openapi.AutoSchema"
+# ------------------------------------------------------------------------------
+# CELERY
+# ------------------------------------------------------------------------------
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL",
+    "redis://localhost:6379/0"
+)
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
 

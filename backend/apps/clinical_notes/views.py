@@ -1,3 +1,4 @@
+from rest_framework.generics import GenericAPIView
 from rest_framework.generics import (
     CreateAPIView,
     ListAPIView,
@@ -10,12 +11,11 @@ from .serializers import (
     ClinicalNoteCreateSerializer,
     ClinicalNoteReadSerializer,
 )
-from .permissions import IsClinician
+from apps.authentication.permissions import IsClinician
 
+class CreateClinicalNoteView(GenericAPIView):
+    permission_classes = [IsClinician]
 
-class CreateClinicalNoteView(CreateAPIView):
-    serializer_class = ClinicalNoteCreateSerializer
-    permission_classes = [IsAuthenticated, IsClinician]
 
 
 class ClinicianNotesListView(ListAPIView):

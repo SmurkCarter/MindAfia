@@ -1,5 +1,7 @@
+# apps/clinical_notes/serializers.py
 from rest_framework import serializers
 from .models import ClinicalNote
+
 
 class ClinicalNoteCreateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +10,6 @@ class ClinicalNoteCreateSerializer(serializers.ModelSerializer):
             "id",
             "patient",
             "assessment",
-            "note_type",
             "note",
         ]
 
@@ -20,7 +21,14 @@ class ClinicalNoteCreateSerializer(serializers.ModelSerializer):
 
 class ClinicalNoteReadSerializer(serializers.ModelSerializer):
     clinician = serializers.StringRelatedField()
+    patient = serializers.StringRelatedField()
+    assessment = serializers.StringRelatedField()
 
     class Meta:
         model = ClinicalNote
         fields = "__all__"
+        read_only_fields = (
+            "clinician",
+            "patient",
+            "created_at",
+        )

@@ -1,12 +1,26 @@
+from rest_framework.viewsets import ModelViewSet
 from rest_framework import viewsets, permissions
 from .models import DoctorAvailability, Appointment
 from .serializers import DoctorAvailabilitySerializer, AppointmentSerializer
-from apps.common.permissions import IsDoctor, IsPatient
+from rest_framework.permissions import IsAuthenticated
+from apps.common.permissions import IsClinician, IsPatient
+from apps.authentication.permissions import (
+    IsPatient,
+    IsClinicianOrAdmin,
+)
+
+class AppointmentViewSet(ModelViewSet):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Appointment.objects.all()
+
 
 
 class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
     serializer_class = DoctorAvailabilitySerializer
-    permission_classes = [permissions.IsAuthenticated, IsDoctor]
+    permission_classes = [permissions.IsAuthenticated, IsClinician]
 
     def get_queryset(self):
         return DoctorAvailability.objects.filter(
@@ -16,17 +30,7 @@ class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(doctor=self.request.user.doctor_profile)
 
-class AppointmentViewSet(viewsets.ModelViewSet):
-    serializer_class = AppointmentSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user
-        if hasattr(user, "doctor_profile"):
-            return Appointment.objects.filter(doctor=user.doctor_profile)
-        if hasattr(user, "patient_profile"):
-            return Appointment.objects.filter(patient=user.patient_profile)
-        return Appointment.objects.none()
 
 
 # Create your views here.

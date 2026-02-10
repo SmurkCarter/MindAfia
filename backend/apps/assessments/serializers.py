@@ -34,11 +34,26 @@ class AssessmentSubmissionSerializer(serializers.Serializer):
             severity=severity,
         )
 
-
 class AssessmentResultReadSerializer(serializers.ModelSerializer):
     assessment = serializers.StringRelatedField()
+    patient = serializers.CharField(source="patient.username", read_only=True)
 
     class Meta:
         model = AssessmentResult
-        fields = "__all__"
-        read_only_fields = fields
+        fields = [
+            "id",
+            "assessment",
+            "patient",
+            "responses",
+            "total_score",
+            "severity",
+            "created_at",
+        ]
+        read_only_fields = (
+            "assessment",
+            "patient",
+            "total_score",
+            "severity",
+            "created_at",
+        )
+

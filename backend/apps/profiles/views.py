@@ -1,3 +1,6 @@
 from django.shortcuts import render
+from rest_framework.permissions import IsAuthenticated
+from apps.authentication.permissions import IsPatient
 
-# Create your views here.
+class PatientProfileViewSet(ModelViewSet):
+    permission_classes = [IsPatient]
