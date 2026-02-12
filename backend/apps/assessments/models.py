@@ -22,7 +22,7 @@ class AssessmentResult(models.Model):
     patient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="assessment_results",
+        related_name="assessments",
     )
 
     assessment = models.ForeignKey(
@@ -32,13 +32,18 @@ class AssessmentResult(models.Model):
     )
 
     responses = models.JSONField()
-    total_score = models.PositiveIntegerField()
-    severity = models.CharField(max_length=64)
+    total_score = models.IntegerField()
+    severity = models.CharField(max_length=50)
+
+    # ✅ ADD IT HERE (separate field)
+    risk_level = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        ordering = ("-created_at",)
-
     def __str__(self):
         return f"{self.patient} – {self.assessment} – {self.total_score}"
+

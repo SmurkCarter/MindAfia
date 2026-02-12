@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from datetime import timedelta
+
 
 # ------------------------------------------------------------------------------
 # BASE
@@ -149,3 +151,7 @@ CELERY_BROKER_URL = os.getenv(
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
