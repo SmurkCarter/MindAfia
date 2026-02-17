@@ -17,33 +17,51 @@ class Assessment(models.Model):
     def __str__(self):
         return self.name
 
-
 class AssessmentResult(models.Model):
     patient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="assessments",
     )
 
     assessment = models.ForeignKey(
-        Assessment,
+        "Assessment",
         on_delete=models.CASCADE,
-        related_name="results",
     )
 
     responses = models.JSONField()
     total_score = models.IntegerField()
-    severity = models.CharField(max_length=50)
+    severity = models.CharField(max_length=100)
 
-    # ✅ ADD IT HERE (separate field)
-    risk_level = models.CharField(
-        max_length=50,
-        blank=True,
-        null=True
-    )
+    # 🔥 ML Fields
+    risk_level = models.CharField(max_length=50, null=True, blank=True)
+    risk_flags = models.JSONField(null=True, blank=True)
+    explanation = models.TextField(null=True, blank=True)
+    recommended_treatments = models.JSONField(null=True, blank=True)
+    recommended_articles = models.JSONField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.patient} – {self.assessment} – {self.total_score}"
+        return f"{self.patient} - {self.assessment} - {self.total_score}"
+
+class RiskAlert(models.Model):
+    assessment = models.ForeignKey(AssessmentResult, on_delete=models.CASCADE)
+    clinician = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved = models.BooleanField(default=False)
+
+RISK_CHOICES = [
+    ("Low", "Low"),
+    ("Moderate", "Moderate"),
+    ("High", "High"),
+    ("Critical", "Critical"),
+]
+
+class PopulationRiskStat(models.Model):
+    risk_level = models.CharField(
+        max_length=20,
+        choices=RISK_CHOICES
+    )
+    count = models.IntegerField(default=0)
+
 

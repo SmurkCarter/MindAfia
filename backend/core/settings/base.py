@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.treatments",
     "apps.chat",
     "apps.ml",
+    "apps.analytics",
 ]
 
 # ------------------------------------------------------------------------------

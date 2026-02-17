@@ -1,34 +1,62 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
-from typing import Dict
+from services.risk_engine import evaluate_risk
+from services.recommender import (
+    recommend_treatment,
+    recommend_articles,
+)
+from services.population_stats import (
+    update_population_stats,
+    get_population_stats,
+)
 
-app = FastAPI(title="MindAfia ML Service")
+app = FastAPI(title="MindAfia ML Engine")
 
 
-class AssessmentInput(BaseModel):
-    assessment_type: str
-    responses: Dict[str, int]
+from fastapi import FastAPI
+from services.risk_engine import evaluate_risk
+from services.recommender import (
+    recommend_treatment,
+    recommend_articles,
+)
+from services.population_stats import (
+    update_population_stats,
+    get_population_stats,
+)
+
+app = FastAPI(title="MindAfia ML Engine")
 
 
 @app.post("/predict-risk/")
-def predict_risk(data: AssessmentInput):
+def predict(data: dict):
+    risk_data = evaluate_risk(
+    assessment_type=data["assessment_type"],
+    score=data["score"],
+    responses=data["responses"],
+    previous_score=data.get("previous_score"),
+    previous_assessment=data.get("previous_assessment"),
+)
 
-    total_score = sum(data.responses.values())
 
-    if data.assessment_type == "PHQ-9":
-        if total_score >= 20:
-            risk = "High"
-        elif total_score >= 10:
-            risk = "Moderate"
-        else:
-            risk = "Low"
-    else:
-        risk = "Moderate"
+    treatments = recommend_treatment(
+        data["assessment_type"],
+        data["severity"],
+        risk_data["risk_level"],
+    )
+
+    articles = recommend_articles(
+        data["assessment_type"],
+    )
+
+    update_population_stats(risk_data["risk_level"])
 
     return {
-        "total_score": total_score,
-        "risk_level": risk,
-        "recommendation": "Immediate clinician review required"
-        if risk == "High"
-        else "Routine follow-up"
+        **risk_data,
+        "recommended_treatments": treatments,
+        "recommended_articles": articles,
     }
+
+
+@app.get("/population-stats/")
+def stats():
+    return get_population_stats()
+

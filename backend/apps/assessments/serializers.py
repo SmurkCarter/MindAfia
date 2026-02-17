@@ -13,19 +13,28 @@ class AssessmentSubmissionSerializer(serializers.Serializer):
 
     def validate(self, data):
         expected = 9 if data["assessment_type"] == Assessment.PHQ9 else 7
+
         if len(data["responses"]) != expected:
-            raise serializers.ValidationError("Invalid number of questions.")
+            raise serializers.ValidationError(
+                f"Expected {expected} questions."
+            )
+
         return data
 
     def create(self, validated_data):
         request = self.context["request"]
-        assessment = Assessment.objects.get(name=validated_data["assessment_type"])
 
+        assessment = Assessment.objects.get(
+            name=validated_data["assessment_type"]
+        )
+
+        # Score calculation
         if assessment.name == Assessment.PHQ9:
             total, severity = score_phq9(validated_data["responses"])
         else:
             total, severity = score_gad7(validated_data["responses"])
 
+        # Create assessment result (ML fields will be filled later)
         return AssessmentResult.objects.create(
             patient=request.user,
             assessment=assessment,
@@ -34,9 +43,15 @@ class AssessmentSubmissionSerializer(serializers.Serializer):
             severity=severity,
         )
 
+
+# 🔥 FULL READ SERIALIZER (Now Includes ML Intelligence Fields)
+
 class AssessmentResultReadSerializer(serializers.ModelSerializer):
     assessment = serializers.StringRelatedField()
-    patient = serializers.CharField(source="patient.username", read_only=True)
+    patient = serializers.CharField(
+        source="patient.username",
+        read_only=True
+    )
 
     class Meta:
         model = AssessmentResult
@@ -47,13 +62,15 @@ class AssessmentResultReadSerializer(serializers.ModelSerializer):
             "responses",
             "total_score",
             "severity",
+
+            # 🔥 ML Intelligence Fields
+            "risk_level",
+            "risk_flags",
+            "explanation",
+            "recommended_treatments",
+            "recommended_articles",
+
             "created_at",
         ]
-        read_only_fields = (
-            "assessment",
-            "patient",
-            "total_score",
-            "severity",
-            "created_at",
-        )
 
+        read_only_fields = fields

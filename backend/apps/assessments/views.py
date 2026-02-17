@@ -1,20 +1,26 @@
 from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
+
 import requests
 
+from django.db.models import Count, F
+
 from apps.authentication.permissions import IsPatient, IsClinicianOrAdmin
-from .models import AssessmentResult
+from .models import AssessmentResult, PopulationRiskStat
 from .serializers import (
     AssessmentSubmissionSerializer,
     AssessmentResultReadSerializer,
 )
+from .analytics_serializers import PopulationRiskSerializer
 
+
+# =====================================================
+# SUBMIT ASSESSMENT (Patient Only)
+# =====================================================
 
 class SubmitAssessmentView(GenericAPIView):
-    """
-    Patient submits PHQ-9 or GAD-7 assessment
-    """
     serializer_class = AssessmentSubmissionSerializer
     permission_classes = [IsPatient]
 
@@ -35,6 +41,8 @@ class SubmitAssessmentView(GenericAPIView):
                 "http://127.0.0.1:8001/predict-risk/",
                 json={
                     "assessment_type": result.assessment.name,
+                    "score": result.total_score,
+                    "severity": result.severity,
                     "responses": result.responses,
                 },
                 timeout=5,
@@ -42,8 +50,25 @@ class SubmitAssessmentView(GenericAPIView):
 
             if ml_response.status_code == 200:
                 ml_data = ml_response.json()
+
+                # Save ML outputs
                 result.risk_level = ml_data.get("risk_level")
+                result.risk_flags = ml_data.get("flags")
+                result.explanation = ml_data.get("explanation")
+                result.recommended_treatments = ml_data.get("recommended_treatments")
+                result.recommended_articles = ml_data.get("recommended_articles")
                 result.save()
+
+                # ✅ Update Population Stats (Atomic Safe)
+                if result.risk_level:
+                    stat, created = PopulationRiskStat.objects.get_or_create(
+                        risk_level=result.risk_level,
+                        defaults={"count": 0},
+                    )
+
+                    PopulationRiskStat.objects.filter(pk=stat.pk).update(
+                        count=F("count") + 1
+                    )
 
         except Exception as e:
             print("ML Service Error:", e)
@@ -59,6 +84,10 @@ class SubmitAssessmentView(GenericAPIView):
         )
 
 
+# =====================================================
+# PATIENT VIEW THEIR OWN HISTORY
+# =====================================================
+
 class PatientAssessmentListView(ListAPIView):
     serializer_class = AssessmentResultReadSerializer
     permission_classes = [IsPatient]
@@ -69,6 +98,10 @@ class PatientAssessmentListView(ListAPIView):
         ).order_by("-created_at")
 
 
+# =====================================================
+# CLINICIAN VIEW PATIENT HISTORY
+# =====================================================
+
 class ClinicianAssessmentListView(ListAPIView):
     serializer_class = AssessmentResultReadSerializer
     permission_classes = [IsClinicianOrAdmin]
@@ -78,3 +111,37 @@ class ClinicianAssessmentListView(ListAPIView):
         return AssessmentResult.objects.filter(
             patient_id=patient_id
         ).order_by("-created_at")
+
+
+# =====================================================
+# POPULATION RISK ANALYTICS (Clinician/Admin Only)
+# =====================================================
+
+class PopulationRiskView(APIView):
+    permission_classes = [IsClinicianOrAdmin]
+
+    def get(self, request):
+        stats = PopulationRiskStat.objects.all()
+        serializer = PopulationRiskSerializer(stats, many=True)
+        return Response(serializer.data)
+
+
+# =====================================================
+# MOST COMMON CONDITION (Clinician/Admin Only)
+# =====================================================
+
+class MostCommonConditionView(APIView):
+    permission_classes = [IsClinicianOrAdmin]
+
+    def get(self, request):
+        data = (
+            AssessmentResult.objects
+            .values("assessment__name")
+            .annotate(total=Count("id"))
+            .order_by("-total")
+        )
+
+        if data:
+            return Response(data[0])
+
+        return Response({"message": "No data yet"})
