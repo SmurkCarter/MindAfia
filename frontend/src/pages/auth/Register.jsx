@@ -1,84 +1,62 @@
 import { useState } from "react";
-import { register } from "../../services/authService";
-import { useNavigate, Link } from "react-router-dom";
+import AuthLayout from "../../components/layout/AuthLayout";
+import { Link, useNavigate } from "react-router-dom";
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState("idle");
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      await register(formData);
-      navigate("/login");
-    } catch (err) {
-      setError("Registration failed");
-    }
+
+    setStatus("loading");
+
+    // simulate API call
+    setTimeout(() => {
+      setStatus("success");
+
+      
+      setTimeout(() => {
+        navigate("/login");
+      }, 1800);
+
+    }, 1500);
   };
 
   return (
-    <div style={container}>
-      <h1>Register</h1>
+    <AuthLayout>
+      <h2 className="auth-title">Create Account</h2>
+      <p className="auth-subtitle">
+        Join MindAfya and begin your mental wellness journey.
+      </p>
 
-      {error && <p style={errorStyle}>{error}</p>}
+      <form onSubmit={handleSubmit}>
+        <input type="text" placeholder="Full Name" className="auth-input" />
+        <input type="email" placeholder="Email address" className="auth-input" />
+        <input type="password" placeholder="Password" className="auth-input" />
 
-      <form onSubmit={handleSubmit} style={form}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          required
-          onChange={handleChange}
-        />
+        <button
+          type="submit"
+          className={`auth-btn ${status}`}
+          disabled={status !== "idle"}
+        >
+          {status === "idle" && "Register"}
+          {status === "loading" && <span className="spinner"></span>}
+          {status === "success" && <span className="checkmark">✓</span>}
+        </button>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-          onChange={handleChange}
-        />
-
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          required
-          onChange={handleChange}
-        />
-
-        <button type="submit">Create Account</button>
+        {status === "success" && (
+          <p className="success-text">
+            Account created successfully! Redirecting...
+          </p>
+        )}
       </form>
 
-      <p>
+      <p className="auth-footer">
         Already have an account? <Link to="/login">Login</Link>
       </p>
-    </div>
+    </AuthLayout>
   );
-};
-
-const container = {
-  maxWidth: "400px",
-  margin: "5rem auto",
-};
-
-const form = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "1rem",
-};
-
-const errorStyle = {
-  color: "red",
 };
 
 export default Register;

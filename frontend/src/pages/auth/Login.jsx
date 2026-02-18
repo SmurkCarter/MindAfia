@@ -1,76 +1,107 @@
 import { useState } from "react";
-import { login } from "../../services/authService";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import AuthLayout from "../../components/layout/AuthLayout";
+import { Link } from "react-router-dom";
 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [error, setError] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | loading | success
+  const { login } = useAuth();
   const navigate = useNavigate();
+  const [rememberMe, setRememberMe] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setStatus("loading");
+
     try {
-      const data = await login(formData);
-      localStorage.setItem("token", data.access);
-      navigate("/");
-    } catch (err) {
-      setError("Invalid login credentials");
+      // 🔹 Replace this with your real API call
+      // Example mock response
+      const fakeResponse = {
+        access: "mock-jwt-token",
+        user: {
+          id: 1,
+          name: "John Doe",
+          email: "john@example.com",
+          role: "patient", // change to "clinician" to test
+        },
+      };
+
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Save to AuthContext
+      login(fakeResponse.access, fakeResponse.user, rememberMe);
+
+
+      // Trigger success animation
+      setStatus("success");
+
+      // Wait for animation then redirect
+      setTimeout(() => {
+        if (fakeResponse.user.role === "patient") {
+          navigate("/patient/dashboard");
+        } else if (fakeResponse.user.role === "clinician") {
+          navigate("/clinician/dashboard");
+        }
+      }, 1000);
+
+    } catch (error) {
+      console.error("Login failed:", error);
+      setStatus("idle");
     }
   };
 
   return (
-    <div style={container}>
-      <h1>Login</h1>
+    <AuthLayout>
+      <h2 className="auth-title">Welcome Back</h2>
+      <p className="auth-subtitle">
+        Log in to access your mental health dashboard.
+      </p>
 
-      {error && <p style={errorStyle}>{error}</p>}
-
-      <form onSubmit={handleSubmit} style={form}>
+      <form onSubmit={handleSubmit}>
         <input
           type="email"
-          name="email"
-          placeholder="Email"
+          placeholder="Email address"
+          className="auth-input"
           required
-          onChange={handleChange}
         />
 
         <input
           type="password"
-          name="password"
           placeholder="Password"
+          className="auth-input"
           required
-          onChange={handleChange}
         />
+        <div className="remember-me">
+  <label>
+    <input
+      type="checkbox"
+      checked={rememberMe}
+      onChange={(e) => setRememberMe(e.target.checked)}
+    />
+    Remember me
+  </label>
+</div>
 
-        <button type="submit">Login</button>
+
+        <button
+          type="submit"
+          className={`auth-btn ${status}`}
+          disabled={status !== "idle"}
+        >
+          {status === "idle" && "Login"}
+          {status === "loading" && <span className="spinner"></span>}
+          {status === "success" && <span className="checkmark">✓</span>}
+        </button>
       </form>
 
-      <p>
-        Don’t have an account? <Link to="/register">Register</Link>
+      <p className="auth-footer">
+        Don’t have an account? <Link to="/register">Create one</Link>
       </p>
-    </div>
+    </AuthLayout>
   );
-};
-
-const container = {
-  maxWidth: "400px",
-  margin: "5rem auto",
-};
-
-const form = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "1rem",
-};
-
-const errorStyle = {
-  color: "red",
 };
 
 export default Login;

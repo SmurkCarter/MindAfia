@@ -1,34 +1,45 @@
-import { Link } from "react-router-dom";
-import { FaBrain, FaChevronDown } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaBrain, FaChevronDown, FaUserCircle } from "react-icons/fa";
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const Navbar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [openUserMenu, setOpenUserMenu] = useState(false);
+
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
-    <nav style={nav}>
+    <nav className="navbar">
+      
       {/* LEFT: BRAND */}
-      <div style={left}>
-        <FaBrain size={26} color="#075985" />
-        <span style={brandText}>MindAfya</span>
+      <div className="nav-left">
+        <FaBrain className="brand-icon" />
+        <span className="brand-text">MindAfya</span>
       </div>
 
       {/* CENTER: NAV LINKS */}
-      <ul style={center}>
+      <ul className="nav-center">
         <li><Link to="/">Home</Link></li>
 
         {/* ABOUT DROPDOWN */}
         <li
-          style={dropdownWrapper}
+          className="dropdown"
           onMouseEnter={() => setOpenDropdown("about")}
           onMouseLeave={() => setOpenDropdown(null)}
         >
-          <span style={navItem}>
+          <span>
             About Us <FaChevronDown size={12} />
           </span>
 
           {openDropdown === "about" && (
-            <ul style={dropdownMenu}>
+            <ul className="dropdown-menu">
               <li><Link to="/about">Who We Are</Link></li>
               <li><Link to="/about/mission">Our Mission</Link></li>
             </ul>
@@ -37,112 +48,81 @@ const Navbar = () => {
 
         {/* TREATMENTS DROPDOWN */}
         <li
-          style={dropdownWrapper}
+          className="dropdown"
           onMouseEnter={() => setOpenDropdown("treatments")}
           onMouseLeave={() => setOpenDropdown(null)}
         >
-          <span style={navItem}>
+          <span>
             Treatments <FaChevronDown size={12} />
           </span>
 
           {openDropdown === "treatments" && (
-            <ul style={dropdownMenu}>
-              <li><Link to="/treatments">Curative Treatments</Link></li>
-              <li><Link to="/treatments">Preventive Treatment</Link></li>
-              <li><Link to="/treatments">Promotive Treatments</Link></li>
+            <ul className="dropdown-menu">
+              <li><Link to="/treatments">Curative</Link></li>
+              <li><Link to="/treatments">Preventive</Link></li>
+              <li><Link to="/treatments">Promotive</Link></li>
             </ul>
           )}
         </li>
 
         <li><Link to="/disorders">Disorders</Link></li>
         <li><Link to="/assessments">Assessments</Link></li>
-        <li><Link to="/contact">Contact Us</Link></li>
+        <li><Link to="/contact">Contact</Link></li>
       </ul>
 
-      {/* RIGHT: CTA */}
-      <div style={right}>
-        <Link to="/appointments">
-          <button style={ctaButton}>Book an Appointment</button>
+      {/* RIGHT SIDE */}
+      <div className="nav-right">
+
+  {!isAuthenticated ? (
+    <>
+      <Link to="/login" className="login-link">
+        Login
+      </Link>
+
+      <Link to="/register" className="register-link">
+        Register
+      </Link>
+    </>
+  ) : (
+    <>
+      {/* ROLE BASED DASHBOARD LINK */}
+      {user?.role === "patient" && (
+        <Link to="/patient/dashboard" className="dashboard-link">
+          Dashboard
         </Link>
-      </div>
+      )}
+
+      {user?.role === "clinician" && (
+        <Link to="/clinician/dashboard" className="dashboard-link">
+          Clinician Panel
+        </Link>
+      )}
+
+      <button className="logout-btn" onClick={logout}>
+        Logout
+      </button>
+    </>
+  )}
+
+  <Link
+  to={
+    user?.role === "patient"
+      ? "/patient/book-appointment"
+      : user?.role === "clinician"
+      ? "/clinician/dashboard"
+      : "/login"
+  }
+>
+  <button className="btn-cta">
+    Book Appointment
+  </button>
+</Link>
+
+
+</div>
+
     </nav>
   );
-};
-
-/* ===== Styles ===== */
-
-const nav = {
-  display: "flex",
-  alignItems: "center",
-  padding: "1rem 2.5rem",
-  borderBottom: "1px solid #e5e7eb",
-  backgroundColor: "#ffffff",
-};
-
-const left = {
-  display: "flex",
-  alignItems: "center",
-  gap: "0.5rem",
-  flex: 1,
-};
-
-const brandText = {
-  fontSize: "1.25rem",
-  fontWeight: "700",
-  color: "#075985",
-};
-
-const center = {
-  display: "flex",
-  listStyle: "none",
-  gap: "2.5rem",
-  justifyContent: "center",
-  alignItems: "center",
-  margin: 0,
-  padding: 0,
-  flex: 2,
-};
-
-const navItem = {
-  display: "flex",
-  alignItems: "center",
-  gap: "0.3rem",
-  cursor: "pointer",
-  fontWeight: 500,
-};
-
-const dropdownWrapper = {
-  position: "relative",
-};
-
-const dropdownMenu = {
-  position: "absolute",
-  top: "2.5rem",
-  left: 0,
-  backgroundColor: "#ffffff",
-  border: "1px solid #e5e7eb",
-  borderRadius: "10px",
-  padding: "0.75rem 0",
-  minWidth: "220px",
-  boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-  animation: "fadeSlide 0.2s ease-out",
-  zIndex: 1000,
-};
-
-const right = {
-  display: "flex",
-  justifyContent: "flex-end",
-  flex: 1,
-};
-
-const ctaButton = {
-  backgroundColor: "#075985",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "999px",
-  padding: "0.6rem 1.6rem",
-  fontWeight: "600",
-  cursor: "pointer",
 };
 
 export default Navbar;

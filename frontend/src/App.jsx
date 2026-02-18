@@ -9,7 +9,12 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PatientDashboard from "./pages/patient/Dashboard";
-import PHQ9 from "./assessments/PHQ9";
+import PHQ9 from "./pages/assessments/PHQ9";
+import ClinicianDashboard from "./pages/clinicians/Dashboard";
+import RoleGuard from "./components/guards/RoleGuard";
+import Chat from "./pages/patient/Chat";
+import BookAppointment from "./pages/patient/BookAppointment";
+
 
 
 
@@ -25,14 +30,52 @@ function App() {
         <Route path="/treatments" element={<Treatments />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/assessments/phq-9" element={<PHQ9 />} />
+        
 
 
-        <Route
+
+       <Route
   path="/patient/dashboard"
   element={
     <ProtectedRoute>
-      <div>Patient Dashboard (Protected)</div>
+      <PatientDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/patient/chat"
+  element={
+    <RoleGuard allowedRoles={["patient"]}>
+      <Chat />
+    </RoleGuard>
+  }
+/>
+<Route
+    path="/clinician/dashboard"
+    element={
+      <ProtectedRoute allowedRole="clinician">
+        <ClinicianDashboard />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+  path="/patient/book-appointment"
+  element={
+    <ProtectedRoute>
+      <RoleGuard allowedRole="patient">
+        <BookAppointment />
+      </RoleGuard>
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/assessments/depression"
+  element={
+    <ProtectedRoute>
+      <RoleGuard allowedRole="patient">
+        <PHQ9 />
+      </RoleGuard>
     </ProtectedRoute>
   }
 />
