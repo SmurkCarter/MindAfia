@@ -9,6 +9,36 @@ from apps.authentication.permissions import (
     IsClinicianOrAdmin,
 )
 
+from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from apps.clinicians.models import ClinicianProfile
+
+class AvailableCliniciansView(APIView):
+    def get(self, request):
+        clinicians = ClinicianProfile.objects.all()
+
+        data = [
+            {
+                "id": c.id,
+                "name": c.user.username,
+                "specialization": c.specialization
+            }
+            for c in clinicians
+        ]
+
+        return Response(data)
+
+
+class PatientAppointmentListView(ListAPIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Appointment.objects.filter(
+            patient=self.request.user
+        ).order_by("-date")
+
 class AppointmentViewSet(ModelViewSet):
     serializer_class = AppointmentSerializer
     permission_classes = [IsAuthenticated]
@@ -33,4 +63,27 @@ class DoctorAvailabilityViewSet(viewsets.ModelViewSet):
 
 
 
+class MyAppointmentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.is_patient:
+            appointments = Appointment.objects.filter(patient=request.user)
+        elif request.user.is_clinician:
+            appointments = Appointment.objects.filter(doctor__user=request.user)
+        else:
+            appointments = Appointment.objects.none()
+
+        data = [
+            {
+                "id": a.id,
+                "patient": a.patient.username,
+                "doctor": a.doctor.user.username,
+                "date": a.date,
+                "status": a.status,
+            }
+            for a in appointments
+        ]
+
+        return Response(data)
 # Create your views here.

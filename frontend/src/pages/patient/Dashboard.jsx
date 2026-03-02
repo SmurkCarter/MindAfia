@@ -6,10 +6,33 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../../services/api";
 import Chat from "./Chat";
 
 const PatientDashboard = () => {
   const { user } = useAuth();
+  const [assessments, setAssessments] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const assessmentsRes = await api.get("assessments/my/");
+        setAssessments(assessmentsRes.data);
+
+        const appointmentsRes = await api.get("appointments/");
+        setAppointments(appointmentsRes.data);
+
+      } catch (error) {
+        console.error("Error loading patient data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const latestAssessment = assessments[0];
 
   return (
     <div className="patient-dashboard">
@@ -17,10 +40,9 @@ const PatientDashboard = () => {
       {/* HEADER */}
       <div className="patient-header">
         <div>
-          <h1>Hello, {user?.name || "Patient"} 👋</h1>
+          <h1>Hello, {user?.username || "Patient"} 👋</h1>
           <p>Here’s a snapshot of your mental wellness journey.</p>
 
-          {/* ✅ BOOK APPOINTMENT BUTTON ADDED */}
           <Link
             to="/patient/book-appointment"
             className="book-appointment-btn"
@@ -39,20 +61,20 @@ const PatientDashboard = () => {
 
         <div className="patient-card">
           <FaClipboardList className="card-icon" />
-          <h3>4</h3>
+          <h3>{assessments.length}</h3>
           <p>Assessments Completed</p>
         </div>
 
         <div className="patient-card">
           <FaCalendarAlt className="card-icon" />
-          <h3>1</h3>
-          <p>Upcoming Appointment</p>
+          <h3>{appointments.length}</h3>
+          <p>Upcoming Appointments</p>
         </div>
 
         <div className="patient-card">
           <FaChartLine className="card-icon" />
-          <h3>Stable</h3>
-          <p>Current Wellness Status</p>
+          <h3>{latestAssessment?.risk_level || "N/A"}</h3>
+          <p>Current Risk Level</p>
         </div>
 
       </div>
@@ -67,27 +89,21 @@ const PatientDashboard = () => {
           <div className="patient-section">
             <h2>Recent Assessments</h2>
 
-            <div className="activity-card">
-              <strong>PHQ-9 (Depression)</strong>
-              <p>Score: 8 — Mild Depression</p>
-            </div>
+            {assessments.slice(0, 2).map((assessment) => (
+              <div className="activity-card" key={assessment.id}>
+                <strong>{assessment.assessment}</strong>
+                <p>
+                  Score: {assessment.total_score} — {assessment.severity}
+                </p>
+                <p>
+                  Risk: {assessment.risk_level || "Pending"}
+                </p>
+              </div>
+            ))}
 
-            <div className="activity-card">
-              <strong>GAD-7 (Anxiety)</strong>
-              <p>Score: 6 — Mild Anxiety</p>
-            </div>
-          </div>
-
-          {/* RECOMMENDATIONS */}
-          <div className="patient-section">
-            <h2>Personalized Recommendations</h2>
-
-            <div className="recommendation-card">
-              <p>
-                Based on your recent assessments, consider scheduling a follow-up
-                consultation and practicing guided breathing exercises.
-              </p>
-            </div>
+            {assessments.length === 0 && (
+              <p>No assessments yet.</p>
+            )}
           </div>
 
         </div>

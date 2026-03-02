@@ -3,16 +3,25 @@ from .models import Assessment, AssessmentResult
 from .scoring import score_phq9, score_gad7
 
 
+
+class AssessmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assessment
+        fields = ["id", "name"]
+
 class AssessmentSubmissionSerializer(serializers.Serializer):
-    assessment_type = serializers.ChoiceField(
-        choices=[Assessment.PHQ9, Assessment.GAD7]
+    assessment = serializers.PrimaryKeyRelatedField(
+        queryset=Assessment.objects.all()
     )
+
     responses = serializers.DictField(
         child=serializers.IntegerField(min_value=0, max_value=3)
     )
 
     def validate(self, data):
-        expected = 9 if data["assessment_type"] == Assessment.PHQ9 else 7
+        assessment = data["assessment"]
+
+        expected = 9 if assessment.name == Assessment.PHQ9 else 7
 
         if len(data["responses"]) != expected:
             raise serializers.ValidationError(
@@ -23,10 +32,7 @@ class AssessmentSubmissionSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         request = self.context["request"]
-
-        assessment = Assessment.objects.get(
-            name=validated_data["assessment_type"]
-        )
+        assessment = validated_data["assessment"]
 
         # Score calculation
         if assessment.name == Assessment.PHQ9:
@@ -34,7 +40,6 @@ class AssessmentSubmissionSerializer(serializers.Serializer):
         else:
             total, severity = score_gad7(validated_data["responses"])
 
-        # Create assessment result (ML fields will be filled later)
         return AssessmentResult.objects.create(
             patient=request.user,
             assessment=assessment,
@@ -42,7 +47,6 @@ class AssessmentSubmissionSerializer(serializers.Serializer):
             total_score=total,
             severity=severity,
         )
-
 
 # 🔥 FULL READ SERIALIZER (Now Includes ML Intelligence Fields)
 

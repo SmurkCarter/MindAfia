@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    CurrentUserView,
     DoctorRegisterView,
     PatientRegisterView,
     MyTokenObtainPairView,
@@ -17,4 +18,5 @@ urlpatterns = [
     path("token/verify/", TokenVerifyView.as_view(), name="token-verify"),
 
     path("me/", MeView.as_view(), name="me"),
+    path("me/", CurrentUserView.as_view()),
 ]

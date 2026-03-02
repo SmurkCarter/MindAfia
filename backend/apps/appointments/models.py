@@ -1,16 +1,18 @@
 from django.conf import settings
 from django.db import models
-from apps.profiles.models import DoctorProfile, PatientProfile
+from apps.profiles.models import PatientProfile
+from apps.clinicians.models import ClinicianProfile
 
 User = settings.AUTH_USER_MODEL
 
 
 class DoctorAvailability(models.Model):
     doctor = models.ForeignKey(
-        DoctorProfile,
-        on_delete=models.CASCADE,
-        related_name="availabilities"
-    )
+        ClinicianProfile,
+    on_delete=models.CASCADE,
+    related_name="availabilities"
+)
+
     date = models.DateField()
     start_time = models.TimeField()
     end_time = models.TimeField()
@@ -37,7 +39,7 @@ class Appointment(models.Model):
     ]
 
     doctor = models.ForeignKey(
-        DoctorProfile,
+        ClinicianProfile,
         on_delete=models.CASCADE,
         related_name="appointments"
     )

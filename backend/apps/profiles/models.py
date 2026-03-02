@@ -4,15 +4,6 @@ from django.db import models
 User = settings.AUTH_USER_MODEL
 
 
-class DoctorProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="doctor_profile")
-    specialization = models.CharField(max_length=255)
-    license_number = models.CharField(max_length=100, unique=True)
-    bio = models.TextField(blank=True)
-    is_verified = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Doctor: {self.user.username}"
 
 
 class PatientProfile(models.Model):

@@ -3,6 +3,6 @@ from .views import DoctorAvailabilityViewSet, AppointmentViewSet
 
 router = DefaultRouter()
 router.register("availability", DoctorAvailabilityViewSet, basename="availability")
-router.register("appointments", AppointmentViewSet, basename="appointments")
+router.register("", AppointmentViewSet, basename="appointments")
 
 urlpatterns = router.urls

@@ -1,36 +1,30 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaBell, FaExclamationTriangle } from "react-icons/fa";
+import api from "../../services/api";
 
 const ClinicianDashboard = () => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [data, setData] = useState(null);
 
-  const patients = [
-    {
-      name: "John Doe",
-      lastVisit: "2026-01-12",
-      risk: "High",
-      status: "Active",
-    },
-    {
-      name: "Mary Jane",
-      lastVisit: "2026-01-10",
-      risk: "Moderate",
-      status: "Active",
-    },
-    {
-      name: "Peter Smith",
-      lastVisit: "2025-12-20",
-      risk: "Low",
-      status: "Inactive",
-    },
-  ];
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const response = await api.get("clinicians/dashboard/");
+        setData(response.data);
+      } catch (error) {
+        console.error("Failed to load dashboard:", error);
+      }
+    };
 
-  const highRiskPatients = patients.filter(p => p.risk === "High");
+    fetchDashboard();
+  }, []);
+
+  if (!data) return <div>Loading dashboard...</div>;
 
   return (
     <div className="clinician-layout">
 
-      {/* ===== SIDEBAR ===== */}
+      {/* SIDEBAR */}
       <aside className="clinician-sidebar">
         <h3>Clinician Panel</h3>
         <ul>
@@ -41,40 +35,37 @@ const ClinicianDashboard = () => {
         </ul>
       </aside>
 
-      {/* ===== MAIN CONTENT ===== */}
       <div className="clinician-main">
 
-        {/* ===== TOP BAR ===== */}
+        {/* TOPBAR */}
         <div className="clinician-topbar">
-          <h1>Welcome Back, Dr. Smith 👋</h1>
+          <h1>
+            Welcome Back, Dr.{" "}
+            {typeof data.clinician === "string"
+              ? data.clinician
+              : data.clinician?.name || "Clinician"} 👋
+          </h1>
 
-          <div className="notification-wrapper">
-            <FaBell
-              className="notification-icon"
-              onClick={() => setNotificationsOpen(!notificationsOpen)}
-            />
-
-            {notificationsOpen && (
-              <div className="notification-dropdown">
-                <p>🔔 New PHQ-9 submitted</p>
-                <p>🕒 Appointment at 10:00 AM</p>
-              </div>
-            )}
-          </div>
+          <FaBell
+            className="notification-icon"
+            onClick={() => setNotificationsOpen(!notificationsOpen)}
+          />
         </div>
 
-        {/* ===== HIGH RISK ALERTS ===== */}
-        {highRiskPatients.length > 0 && (
+        {/* HIGH RISK ALERT */}
+        {data.high_risk_alerts?.length > 0 && (
           <div className="alert-card">
             <FaExclamationTriangle />
             <div>
               <strong>High Risk Alert:</strong>{" "}
-              {highRiskPatients.map(p => p.name).join(", ")} (Severe Depression)
+              {data.high_risk_alerts
+                .map((p) => p.patient_name || p.patient__username)
+                .join(", ")}
             </div>
           </div>
         )}
 
-        {/* ===== QUICK ACTIONS ===== */}
+        {/* QUICK ACTIONS */}
         <div className="quick-actions">
           <button>Add Notes</button>
           <button>Schedule Appointment</button>
@@ -82,7 +73,6 @@ const ClinicianDashboard = () => {
           <button>Create Treatment Plan</button>
         </div>
 
-        {/* ===== DASHBOARD GRID ===== */}
         <div className="clinician-grid">
 
           {/* PATIENT TABLE */}
@@ -99,11 +89,11 @@ const ClinicianDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {patients.map((patient, index) => (
+                {data.patients?.map((patient, index) => (
                   <tr key={index}>
                     <td>{patient.name}</td>
-                    <td>{patient.lastVisit}</td>
-                    <td className={`risk-${patient.risk.toLowerCase()}`}>
+                    <td>{patient.last_visit}</td>
+                    <td className={`risk-${patient.risk?.toLowerCase()}`}>
                       {patient.risk}
                     </td>
                     <td>{patient.status}</td>
@@ -116,13 +106,15 @@ const ClinicianDashboard = () => {
             </table>
           </div>
 
-          {/* MINI CALENDAR */}
+          {/* WEEKLY APPOINTMENTS */}
           <div className="dashboard-card">
             <h3>This Week</h3>
             <ul className="calendar-list">
-              <li>Mon - John Doe (10:00 AM)</li>
-              <li>Tue - Mary Jane (1:30 PM)</li>
-              <li>Thu - Peter Smith (11:00 AM)</li>
+              {data.week_appointments?.map((appt, index) => (
+                <li key={index}>
+                  {appt.day} - {appt.patient_name} ({appt.time})
+                </li>
+              ))}
             </ul>
           </div>
 

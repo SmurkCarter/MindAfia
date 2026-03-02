@@ -27,3 +27,6 @@ pip-wheel-metadata/
 # Pytest / coverage
 htmlcov/
 .coverage
+
+frontend/README.md
+frontend/eslint.config.js

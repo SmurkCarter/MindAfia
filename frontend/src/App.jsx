@@ -69,11 +69,12 @@ function App() {
     </ProtectedRoute>
   }
 />
+
 <Route
   path="/assessments/depression"
   element={
     <ProtectedRoute>
-      <RoleGuard allowedRole="patient">
+      <RoleGuard allowedRoles={["patient"]}>
         <PHQ9 />
       </RoleGuard>
     </ProtectedRoute>
@@ -87,3 +88,5 @@ function App() {
 }
 
 export default App;
+
+

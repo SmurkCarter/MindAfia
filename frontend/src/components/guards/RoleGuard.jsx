@@ -1,14 +1,14 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-const RoleGuard = ({ allowedRole, children }) => {
+const RoleGuard = ({ children, allowedRole }) => {
   const { user } = useAuth();
 
-  if (!user) {
-    return <Navigate to="/login" />;
+  if (allowedRole === "patient" && !user?.is_patient) {
+    return <Navigate to="/" />;
   }
 
-  if (user.role !== allowedRole) {
+  if (allowedRole === "clinician" && !user?.is_clinician) {
     return <Navigate to="/" />;
   }
 

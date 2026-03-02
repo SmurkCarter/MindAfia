@@ -1,12 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
-import { FaBrain, FaChevronDown, FaUserCircle } from "react-icons/fa";
+import { FaBrain, FaChevronDown } from "react-icons/fa";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
 const Navbar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [openUserMenu, setOpenUserMenu] = useState(false);
-
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -17,7 +15,7 @@ const Navbar = () => {
 
   return (
     <nav className="navbar">
-      
+
       {/* LEFT: BRAND */}
       <div className="nav-left">
         <FaBrain className="brand-icon" />
@@ -28,7 +26,6 @@ const Navbar = () => {
       <ul className="nav-center">
         <li><Link to="/">Home</Link></li>
 
-        {/* ABOUT DROPDOWN */}
         <li
           className="dropdown"
           onMouseEnter={() => setOpenDropdown("about")}
@@ -46,7 +43,6 @@ const Navbar = () => {
           )}
         </li>
 
-        {/* TREATMENTS DROPDOWN */}
         <li
           className="dropdown"
           onMouseEnter={() => setOpenDropdown("treatments")}
@@ -73,53 +69,43 @@ const Navbar = () => {
       {/* RIGHT SIDE */}
       <div className="nav-right">
 
-  {!isAuthenticated ? (
-    <>
-      <Link to="/login" className="login-link">
-        Login
-      </Link>
+        {!isAuthenticated ? (
+          <>
+            <Link to="/login" className="login-link">Login</Link>
+            <Link to="/register" className="register-link">Register</Link>
+          </>
+        ) : (
+          <>
+            {/* PATIENT DASHBOARD */}
+            {user?.is_patient && (
+              <Link to="/patient/dashboard" className="dashboard-link">
+                Dashboard
+              </Link>
+            )}
 
-      <Link to="/register" className="register-link">
-        Register
-      </Link>
-    </>
-  ) : (
-    <>
-      {/* ROLE BASED DASHBOARD LINK */}
-      {user?.role === "patient" && (
-        <Link to="/patient/dashboard" className="dashboard-link">
-          Dashboard
-        </Link>
-      )}
+            {/* CLINICIAN DASHBOARD */}
+            {user?.is_clinician && (
+              <Link to="/clinician/dashboard" className="dashboard-link">
+                Clinician Panel
+              </Link>
+            )}
 
-      {user?.role === "clinician" && (
-        <Link to="/clinician/dashboard" className="dashboard-link">
-          Clinician Panel
-        </Link>
-      )}
+            <button className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </>
+        )}
 
-      <button className="logout-btn" onClick={logout}>
-        Logout
-      </button>
-    </>
-  )}
+        {/* BOOK APPOINTMENT BUTTON (PATIENT ONLY) */}
+        {user?.is_patient && (
+          <Link to="/patient/book-appointment">
+            <button className="btn-cta">
+              Book Appointment
+            </button>
+          </Link>
+        )}
 
-  <Link
-  to={
-    user?.role === "patient"
-      ? "/patient/book-appointment"
-      : user?.role === "clinician"
-      ? "/clinician/dashboard"
-      : "/login"
-  }
->
-  <button className="btn-cta">
-    Book Appointment
-  </button>
-</Link>
-
-
-</div>
+      </div>
 
     </nav>
   );

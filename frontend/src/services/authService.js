@@ -1,14 +1,27 @@
-import axios from "axios";
+import api from "./api";
 
-const API_URL = "http://localhost:8000/api/auth"; 
-// adjust to your Django backend
+// Login
+export const loginUser = async (credentials) => {
+  const response = await api.post("auth/token/", credentials);
 
-export const login = async (credentials) => {
-  const response = await axios.post(`${API_URL}/login/`, credentials);
+  const { access, refresh } = response.data;
+
+  localStorage.setItem("access", access);
+  localStorage.setItem("refresh", refresh);
+
   return response.data;
 };
 
-export const register = async (userData) => {
-  const response = await axios.post(`${API_URL}/register/`, userData);
-  return response.data;
+// Register Patient
+export const registerPatient = (data) =>
+  api.post("auth/register/patient/", data);
+
+// Register Doctor
+export const registerDoctor = (data) =>
+  api.post("auth/register/doctor/", data);
+
+// Logout
+export const logoutUser = () => {
+  localStorage.removeItem("access");
+  localStorage.removeItem("refresh");
 };

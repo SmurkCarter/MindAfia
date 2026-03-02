@@ -3,53 +3,52 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import AuthLayout from "../../components/layout/AuthLayout";
 import { Link } from "react-router-dom";
+import { loginUser } from "../../services/authService";
+import api from "../../services/api";
 
 const Login = () => {
-  const [status, setStatus] = useState("idle"); // idle | loading | success
+  const [status, setStatus] = useState("idle");
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [rememberMe, setRememberMe] = useState(false);
 
+  const [rememberMe, setRememberMe] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("loading");
 
     try {
-      // 🔹 Replace this with your real API call
-      // Example mock response
-      const fakeResponse = {
-        access: "mock-jwt-token",
-        user: {
-          id: 1,
-          name: "John Doe",
-          email: "john@example.com",
-          role: "patient", // change to "clinician" to test
-        },
-      };
+      // 🔥 REAL LOGIN CALL
+      const tokenData = await loginUser({
+        username,
+        password,
+      });
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // 🔥 Fetch logged-in user details
+      const userResponse = await api.get("auth/me/");
+      const user = userResponse.data;
 
       // Save to AuthContext
-      login(fakeResponse.access, fakeResponse.user, rememberMe);
+      login(tokenData.access, user, rememberMe);
 
-
-      // Trigger success animation
       setStatus("success");
 
-      // Wait for animation then redirect
       setTimeout(() => {
-        if (fakeResponse.user.role === "patient") {
+        if (user.is_patient) {
           navigate("/patient/dashboard");
-        } else if (fakeResponse.user.role === "clinician") {
+        } else if (user.is_clinician) {
           navigate("/clinician/dashboard");
+        } else {
+          navigate("/");
         }
       }, 1000);
 
     } catch (error) {
       console.error("Login failed:", error);
       setStatus("idle");
+      alert("Invalid credentials");
     }
   };
 
@@ -62,9 +61,11 @@ const Login = () => {
 
       <form onSubmit={handleSubmit}>
         <input
-          type="email"
-          placeholder="Email address"
+          type="text"
+          placeholder="Username"
           className="auth-input"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           required
         />
 
@@ -72,19 +73,21 @@ const Login = () => {
           type="password"
           placeholder="Password"
           className="auth-input"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           required
         />
-        <div className="remember-me">
-  <label>
-    <input
-      type="checkbox"
-      checked={rememberMe}
-      onChange={(e) => setRememberMe(e.target.checked)}
-    />
-    Remember me
-  </label>
-</div>
 
+        <div className="remember-me">
+          <label>
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            Remember me
+          </label>
+        </div>
 
         <button
           type="submit"

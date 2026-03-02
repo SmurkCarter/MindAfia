@@ -4,6 +4,7 @@ from .views import (
     SubmitAssessmentView,
     PatientAssessmentListView,
     ClinicianAssessmentListView,
+    AssessmentListView,
 )
 
 urlpatterns = [
@@ -12,4 +13,5 @@ urlpatterns = [
       path("analytics/population-risk/", PopulationRiskView.as_view()),
     path("analytics/most-common/", MostCommonConditionView.as_view()),
     path("patient/<int:patient_id>/", ClinicianAssessmentListView.as_view()),
+    path("", AssessmentListView.as_view()),
 ]
