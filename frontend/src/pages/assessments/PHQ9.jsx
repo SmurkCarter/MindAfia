@@ -67,53 +67,53 @@ export default function PHQ9() {
     setResult(null);
   };
 
-  // ================= RESULT VIEW =================
-  if (result) {
-    return (
-      <div className="assessment-result">
-        <div className="result-card">
-          <h2>PHQ-9 Results</h2>
+// ================= RESULT VIEW =================
+if (result) {
+  return (
+    <div className="assessment-result">
+      <div className="result-card">
+        <h2>PHQ-9 Results</h2>
 
-          <h3>Score: {result.score}</h3>
-          <p>{result.severity}</p>
+        <h3>Score: {result.total_score}</h3>
+        <p>{result.severity}</p>
 
-          <p><strong>Risk Level:</strong> {result.risk_level}</p>
+        <p><strong>Risk Level:</strong> {result.risk_level}</p>
 
-          {result.risk_level === "High" && (
-            <div className="risk-alert">
-              ⚠ High Risk Detected — Clinician notified.
+        {result.risk_level === "High" && (
+          <div className="risk-alert">
+            ⚠ High Risk Detected — Clinician notified.
+          </div>
+        )}
+
+        {Array.isArray(result.recommended_articles) &&
+          result.recommended_articles.length > 0 && (
+            <div>
+              <h3>Recommended Articles</h3>
+              <ul>
+                {result.recommended_articles.map((a, i) => (
+                  <li key={i}>{a}</li>
+                ))}
+              </ul>
             </div>
-          )}
+        )}
 
-          {Array.isArray(result.recommended_articles) &&
-            result.recommended_articles.length > 0 && (
-              <div>
-                <h3>Recommended Articles</h3>
-                <ul>
-                  {result.recommended_articles.map((a, i) => (
-                    <li key={i}>{a}</li>
-                  ))}
-                </ul>
-              </div>
-          )}
+        {Array.isArray(result.recommended_treatments) &&
+          result.recommended_treatments.length > 0 && (
+            <div>
+              <h3>Recommended Treatments</h3>
+              <ul>
+                {result.recommended_treatments.map((t, i) => (
+                  <li key={i}>{t}</li>
+                ))}
+              </ul>
+            </div>
+        )}
 
-          {Array.isArray(result.recommended_treatments) &&
-            result.recommended_treatments.length > 0 && (
-              <div>
-                <h3>Recommended Treatments</h3>
-                <ul>
-                  {result.recommended_treatments.map((t, i) => (
-                    <li key={i}>{t}</li>
-                  ))}
-                </ul>
-              </div>
-          )}
-
-          <button onClick={resetAssessment}>Take Again</button>
-        </div>
+        <button onClick={resetAssessment}>Take Again</button>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   // ================= FORM VIEW =================
   return (

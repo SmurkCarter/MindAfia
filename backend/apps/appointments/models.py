@@ -25,44 +25,49 @@ class DoctorAvailability(models.Model):
         return f"{self.doctor.user.username} | {self.date} {self.start_time}-{self.end_time}"
 
 
+
 class Appointment(models.Model):
-    STATUS_PENDING = "pending"
-    STATUS_APPROVED = "approved"
-    STATUS_COMPLETED = "completed"
-    STATUS_CANCELLED = "cancelled"
 
     STATUS_CHOICES = [
-        (STATUS_PENDING, "Pending"),
-        (STATUS_APPROVED, "Approved"),
-        (STATUS_COMPLETED, "Completed"),
-        (STATUS_CANCELLED, "Cancelled"),
+        ("pending", "Pending"),
+        ("confirmed", "Confirmed"),
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    TYPE_CHOICES = [
+        ("online", "Online"),
+        ("physical", "Physical"),
     ]
 
     doctor = models.ForeignKey(
         ClinicianProfile,
-        on_delete=models.CASCADE,
-        related_name="appointments"
+        on_delete=models.CASCADE
     )
+
     patient = models.ForeignKey(
         PatientProfile,
-        on_delete=models.CASCADE,
-        related_name="appointments"
+        on_delete=models.CASCADE
     )
-    availability = models.ForeignKey(
-        DoctorAvailability,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True
-    )
+
     scheduled_date = models.DateField()
     scheduled_time = models.TimeField()
+
+    appointment_type = models.CharField(
+        max_length=10,
+        choices=TYPE_CHOICES,
+        default="online"
+    )
+
+    reason = models.TextField(blank=True)
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default=STATUS_PENDING
+        default="pending"
     )
-    reason = models.TextField(blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Appointment {self.id} | {self.patient.user.username} → {self.doctor.user.username}"
+        return f"{self.patient} - {self.doctor} ({self.scheduled_date})"

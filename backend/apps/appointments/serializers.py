@@ -14,12 +14,13 @@ class DoctorAvailabilitySerializer(serializers.ModelSerializer):
             "date",
             "start_time",
             "end_time",
+            "is_available",
         ]
         read_only_fields = ("doctor",)
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
-    patient_name = serializers.CharField(source="patient.username", read_only=True)
+    patient_name = serializers.CharField(source="patient.user.username", read_only=True)
     doctor_name = serializers.CharField(source="doctor.user.username", read_only=True)
 
     class Meta:
@@ -33,11 +34,11 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "scheduled_date",
             "scheduled_time",
             "status",
+            "reason",
             "created_at",
         ]
         read_only_fields = (
             "patient",
-            "doctor",
             "status",
             "created_at",
         )

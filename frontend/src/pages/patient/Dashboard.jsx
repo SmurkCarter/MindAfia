@@ -1,122 +1,217 @@
+import { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
+
 import {
   FaCalendarAlt,
   FaChartLine,
   FaClipboardList,
   FaUserCircle,
+  FaComments
 } from "react-icons/fa";
-import { useAuth } from "../../context/AuthContext";
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import api from "../../services/api";
-import Chat from "./Chat";
 
 const PatientDashboard = () => {
+
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [assessments, setAssessments] = useState([]);
   const [appointments, setAppointments] = useState([]);
+  const [notes, setNotes] = useState([]);
+  const [riskLevel, setRiskLevel] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const assessmentsRes = await api.get("assessments/my/");
-        setAssessments(assessmentsRes.data);
 
-        const appointmentsRes = await api.get("appointments/");
-        setAppointments(appointmentsRes.data);
+    const loadDashboard = async () => {
+
+      try {
+
+        const res = await api.get("patient/dashboard/");
+
+        if (!res.data.profile_complete) {
+          navigate("/patient/complete-profile");
+          return;
+        }
+
+        setAssessments(res.data.latest_assessments || []);
+        setAppointments(res.data.upcoming_appointments || []);
+        setNotes(res.data.recent_notes || []);
+
+        if (res.data.latest_assessments.length > 0) {
+          setRiskLevel(res.data.latest_assessments[0].severity);
+        }
 
       } catch (error) {
-        console.error("Error loading patient data:", error);
+
+        console.error("Dashboard load error:", error);
+
       }
+
     };
 
-    fetchData();
+    loadDashboard();
+
   }, []);
 
-  const latestAssessment = assessments[0];
+  const openChat = (appointmentId) => {
+
+    if (!appointmentId) {
+      console.error("Invalid appointment id");
+      return;
+    }
+
+    navigate(`/patient/chat/${appointmentId}`);
+
+  };
 
   return (
+
     <div className="patient-dashboard">
 
       {/* HEADER */}
+
       <div className="patient-header">
+
         <div>
+
           <h1>Hello, {user?.username || "Patient"} 👋</h1>
+
           <p>Here’s a snapshot of your mental wellness journey.</p>
 
           <Link
             to="/patient/book-appointment"
             className="book-appointment-btn"
           >
-            + Book New Appointment
+            + Book Appointment
           </Link>
+
         </div>
 
-        <div className="patient-avatar">
-          <FaUserCircle />
-        </div>
+        <Link to="/patient/profile" className="patient-avatar">
+          <FaUserCircle size={45} />
+        </Link>
+
       </div>
 
+
       {/* SUMMARY CARDS */}
+
       <div className="patient-cards">
 
         <div className="patient-card">
-          <FaClipboardList className="card-icon" />
+          <FaClipboardList className="card-icon"/>
           <h3>{assessments.length}</h3>
-          <p>Assessments Completed</p>
+          <p>Assessments Done</p>
         </div>
 
         <div className="patient-card">
-          <FaCalendarAlt className="card-icon" />
+          <FaCalendarAlt className="card-icon"/>
           <h3>{appointments.length}</h3>
           <p>Upcoming Appointments</p>
         </div>
 
         <div className="patient-card">
-          <FaChartLine className="card-icon" />
-          <h3>{latestAssessment?.risk_level || "N/A"}</h3>
+          <FaChartLine className="card-icon"/>
+          <h3>{riskLevel || "N/A"}</h3>
           <p>Current Risk Level</p>
         </div>
 
       </div>
 
-      {/* DASHBOARD CONTENT GRID */}
+
+      {/* DASHBOARD GRID */}
+
       <div className="dashboard-bottom">
 
         {/* LEFT SIDE */}
+
         <div className="dashboard-left">
 
-          {/* RECENT ACTIVITY */}
           <div className="patient-section">
+
             <h2>Recent Assessments</h2>
 
-            {assessments.slice(0, 2).map((assessment) => (
-              <div className="activity-card" key={assessment.id}>
-                <strong>{assessment.assessment}</strong>
+            {assessments.length === 0 && <p>No assessments yet</p>}
+
+            {assessments.map((a, index) => (
+
+              <div className="activity-card" key={index}>
+
+                <strong>{a.type}</strong>
+
                 <p>
-                  Score: {assessment.total_score} — {assessment.severity}
+                  Score: {a.score} — {a.severity}
                 </p>
+
                 <p>
-                  Risk: {assessment.risk_level || "Pending"}
+                  Date: {a.date}
                 </p>
+
               </div>
+
             ))}
 
-            {assessments.length === 0 && (
-              <p>No assessments yet.</p>
-            )}
           </div>
 
         </div>
 
+
         {/* RIGHT SIDE */}
+
         <div className="dashboard-right">
-          <Chat />
+
+          <div className="patient-section">
+
+            <h2>Upcoming Appointments</h2>
+
+            {appointments.length === 0 && (
+              <p>No appointments scheduled</p>
+            )}
+
+            {appointments.map((appt, index) => {
+
+              // 🔑 robust id detection
+              const appointmentId =
+                appt.id ||
+                appt.appointment_id ||
+                appt.appointment?.id;
+
+              return (
+
+                <div className="activity-card" key={index}>
+
+                  <p><strong>Doctor:</strong> {appt.doctor}</p>
+
+                  <p>
+                    {appt.date} — {appt.time}
+                  </p>
+
+                  {appointmentId && (
+                    <button
+                      className="chat-btn"
+                      onClick={() => openChat(appointmentId)}
+                    >
+                      <FaComments /> Open Chat
+                    </button>
+                  )}
+
+                </div>
+
+              );
+
+            })}
+
+          </div>
+
         </div>
 
       </div>
 
     </div>
+
   );
+
 };
 
 export default PatientDashboard;

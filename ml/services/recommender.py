@@ -1,39 +1,104 @@
 def recommend_treatment(assessment_type, severity, risk_level):
-    treatments = []
 
-    if assessment_type == "PHQ-9":
+    # Normalize names
+    assessment_type = assessment_type.upper()
+
+    # ---------------------------
+    # PHQ9
+    # ---------------------------
+    if assessment_type == "PHQ9":
+
         if risk_level in ["High", "Critical"]:
-            treatments.append("Urgent psychiatric evaluation")
-            treatments.append("Crisis intervention therapy")
-        elif "Moderate" in severity:
-            treatments.append("Cognitive Behavioral Therapy (CBT)")
-            treatments.append("SSRI medication consultation")
-        else:
-            treatments.append("Lifestyle modification")
-            treatments.append("Psychoeducation")
+            return [
+                "Cognitive Behavioral Therapy",
+                "Psychiatric evaluation",
+                "Medication management",
+            ]
 
-    if assessment_type == "GAD-7":
+        return [
+            "Behavioral activation",
+            "Guided self-help therapy",
+        ]
+
+    # ---------------------------
+    # GAD7
+    # ---------------------------
+    if assessment_type == "GAD7":
+
         if risk_level == "High":
-            treatments.append("CBT for anxiety")
-            treatments.append("Anxiolytic medication consultation")
-        else:
-            treatments.append("Relaxation therapy")
-            treatments.append("Stress management")
+            return [
+                "CBT for anxiety",
+                "Exposure therapy",
+                "Medication consultation",
+            ]
 
-    return treatments
+        return [
+            "Relaxation therapy",
+            "Mindfulness training",
+        ]
+
+    # ---------------------------
+    # AUDIT
+    # ---------------------------
+    if assessment_type == "AUDIT":
+
+        if risk_level == "High":
+            return [
+                "Motivational interviewing",
+                "Substance use counseling",
+                "Addiction treatment program",
+            ]
+
+        return [
+            "Alcohol reduction counseling",
+            "Lifestyle change coaching",
+        ]
+
+    # ---------------------------
+    # BURNOUT
+    # ---------------------------
+    if assessment_type == "BURNOUT":
+
+        return [
+            "Stress management therapy",
+            "Work-life balance counseling",
+            "Mindfulness therapy",
+        ]
+
+    # Default fallback
+    return [
+        "Consult a mental health professional"
+    ]
 
 
 def recommend_articles(assessment_type):
-    if assessment_type == "PHQ-9":
+
+    assessment_type = assessment_type.upper()
+
+    if assessment_type == "PHQ9":
         return [
             "Understanding Depression",
-            "How CBT Treats Depression",
+            "How to Cope With Depression",
         ]
 
-    if assessment_type == "GAD-7":
+    if assessment_type == "GAD7":
         return [
-            "Managing Anxiety",
+            "Understanding Anxiety Disorders",
             "Breathing Techniques for Anxiety",
         ]
 
-    return []
+    if assessment_type == "AUDIT":
+        return [
+            "Understanding Alcohol Use Disorder",
+            "How to Reduce Alcohol Intake",
+        ]
+
+    if assessment_type == "BURNOUT":
+        return [
+            "What Is Burnout Syndrome",
+            "Recovering From Workplace Burnout",
+        ]
+
+    return [
+        "Mental Health Self-Care Guide"
+    ]

@@ -2,7 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from apps.clinicians.models import ClinicianProfile
 from apps.profiles.models import PatientProfile
-
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 User = get_user_model()
 
 
@@ -101,3 +102,44 @@ class PatientRegisterSerializer(serializers.ModelSerializer):
 
         PatientProfile.objects.create(user=user)
         return user
+
+class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    def validate(self, attrs):
+
+        login_value = attrs.get("username")   # can be email OR username
+        password = attrs.get("password")
+
+        # Try username login
+        user = authenticate(
+            request=self.context.get("request"),
+            username=login_value,
+            password=password
+        )
+
+        # If not found, try email login
+        if not user:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+
+            try:
+                user_obj = User.objects.get(email=login_value)
+
+                user = authenticate(
+                    request=self.context.get("request"),
+                    username=user_obj.username,
+                    password=password
+                )
+
+            except User.DoesNotExist:
+                pass
+
+        if not user:
+            raise serializers.ValidationError("Invalid login credentials")
+
+        data = super().validate({
+            "username": user.username,
+            "password": password
+        })
+
+        return data

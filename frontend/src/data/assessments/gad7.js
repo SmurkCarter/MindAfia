@@ -1,0 +1,16 @@
+export const gad7Questions = [
+  "Feeling nervous, anxious, or on edge",
+  "Not being able to stop or control worrying",
+  "Worrying too much about different things",
+  "Trouble relaxing",
+  "Being so restless that it is hard to sit still",
+  "Becoming easily annoyed or irritable",
+  "Feeling afraid as if something awful might happen"
+];
+
+export const gad7Options = [
+  { label: "Not at all", value: 0 },
+  { label: "Several days", value: 1 },
+  { label: "More than half the days", value: 2 },
+  { label: "Nearly every day", value: 3 }
+];

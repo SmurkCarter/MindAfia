@@ -5,8 +5,8 @@ from .views import (
     PatientRegisterView,
     MyTokenObtainPairView,
     MyTokenRefreshView,
-    MeView,
 )
+
 from rest_framework_simplejwt.views import TokenVerifyView
 
 urlpatterns = [
@@ -17,6 +17,5 @@ urlpatterns = [
     path("token/refresh/", MyTokenRefreshView.as_view(), name="token-refresh"),
     path("token/verify/", TokenVerifyView.as_view(), name="token-verify"),
 
-    path("me/", MeView.as_view(), name="me"),
-    path("me/", CurrentUserView.as_view()),
+    path("me/", CurrentUserView.as_view(), name="current-user"),
 ]

@@ -37,6 +37,7 @@ urlpatterns = [
         name="swagger-ui",
     ),
     path("api/analytics/", include("apps.analytics.urls")),
+    path("api/chat/", include("apps.chat.urls")),
 
 ]
 

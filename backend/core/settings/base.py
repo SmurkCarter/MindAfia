@@ -17,6 +17,13 @@ ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split("
 # APPLICATIONS
 # ------------------------------------------------------------------------------
 INSTALLED_APPS = [
+    "daphne",            # correct spelling
+    "channels",
+
+    "rest_framework",
+    "corsheaders",
+    "drf_spectacular",
+
     # Django core
     "django.contrib.admin",
     "django.contrib.auth",
@@ -24,12 +31,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
-    # Third-party
-    "rest_framework",
-    "corsheaders",
-    "channels",
-    "drf_spectacular",
 
     # Project apps
     "apps.authentication",
@@ -45,7 +46,6 @@ INSTALLED_APPS = [
     "apps.ml",
     "apps.analytics",
 ]
-
 # ------------------------------------------------------------------------------
 # MIDDLEWARE
 # ------------------------------------------------------------------------------
@@ -65,6 +65,12 @@ MIDDLEWARE = [
 ROOT_URLCONF = "core.urls"
 
 ASGI_APPLICATION = "core.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 WSGI_APPLICATION = "core.wsgi.application"
 
 # ------------------------------------------------------------------------------

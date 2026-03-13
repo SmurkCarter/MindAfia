@@ -1,7 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.utils.timezone import now
 
 from apps.assessments.models import AssessmentResult
 from apps.appointments.models import Appointment
@@ -12,6 +11,7 @@ class PatientDashboardView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+
         user = request.user
 
         if not hasattr(user, "patient_profile"):
@@ -19,18 +19,24 @@ class PatientDashboardView(APIView):
 
         patient = user.patient_profile
 
+        # 🔥 check if profile completed
+        profile_complete = bool(patient.date_of_birth and patient.gender)
+
+        # Latest assessments
         assessments = (
             AssessmentResult.objects
             .filter(patient=patient.user)
             .order_by("-created_at")[:5]
         )
 
+        # Appointments
         appointments = (
             Appointment.objects
-            .filter(patient=patient.user, start_time__gte=now())
-            .order_by("start_time")
+            .filter(patient=patient)
+            .order_by("scheduled_date", "scheduled_time")
         )
 
+        # Clinical notes
         notes = (
             ClinicalNote.objects
             .filter(patient=patient.user)
@@ -38,6 +44,9 @@ class PatientDashboardView(APIView):
         )
 
         return Response({
+
+            "profile_complete": profile_complete,
+
             "latest_assessments": [
                 {
                     "type": a.assessment.name,
@@ -47,17 +56,22 @@ class PatientDashboardView(APIView):
                 }
                 for a in assessments
             ],
+
+            # ✅ FIX: add appointment id
             "upcoming_appointments": [
                 {
-                    "start_time": appt.start_time,
-                    "clinician": appt.clinician.user.get_full_name()
+                    "id": appt.id,   # ⭐ THIS IS THE FIX
+                    "date": appt.scheduled_date,
+                    "time": appt.scheduled_time,
+                    "doctor": appt.doctor.user.get_full_name()
                 }
                 for appt in appointments
             ],
+
             "recent_notes": [
                 {
                     "date": note.created_at.date(),
-                    "summary": note.note[:200],  # safe truncation
+                    "summary": note.note[:200],
                 }
                 for note in notes
             ],

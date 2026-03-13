@@ -5,13 +5,19 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import (
     DoctorRegisterSerializer,
     PatientRegisterSerializer,
     UserSerializer,
+    EmailTokenObtainPairSerializer,
 )
 
 User = get_user_model()
+
+
+class EmailLoginView(TokenObtainPairView):
+    serializer_class = EmailTokenObtainPairSerializer
 
 
 class DoctorRegisterView(generics.CreateAPIView):
@@ -34,6 +40,7 @@ class MeView(generics.RetrieveAPIView):
 
 # JWT views (THIS IS WHAT WAS MISSING)
 class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = EmailTokenObtainPairSerializer
     permission_classes = [permissions.AllowAny]
 
 
